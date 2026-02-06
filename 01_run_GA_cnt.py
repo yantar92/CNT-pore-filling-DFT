@@ -52,7 +52,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
         path = atoms.info['data'].get('path', None)
         if path is None:
             idx = atoms.info['confid']
-            generation = atoms.info['key_valid_pairs']['generation']
+            generation = atoms.info['key_value_pairs']['generation']
             atoms.info['data']['path'] = Path(f"{directory}/gen_{generation}_idx_{idx}").absolute()
         if not Path(path).is_dir():
             Path(path).mkdir()
