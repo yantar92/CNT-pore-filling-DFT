@@ -57,8 +57,7 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
     seed.gentags.slack = 0.1
     # Minimum distances between atoms
     seed.gentags.minsep = [5.0, {'C-C': 1.4, 'Na-Na': 3.59346, 'C-Na': 2}]
-    # Fix atoms by default (do not randomize)
-    seed.gentags.fix = True
+    seed.gentags.fix = False
     # seed.gentags.cylinder = radius = (tube.cell[1, 1] - 2 * vacuum)/2
     for atom in seed:
         if atom.symbol == 'C':
@@ -68,6 +67,7 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
         else:
             # All Na can randomly move up to radius_cnt in x/y direction
             # z - any
+            atom.fix = False
             atom.zamp = -1
             atom.xamp = radius_cnt
             atom.yamp = radius_cnt
