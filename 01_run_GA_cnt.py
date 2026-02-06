@@ -70,7 +70,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             assert tem is not None
             energy = tem.get_potential_energy()
             forces = tem.get_forces()
-            atoms.set_positions(a_tem.get_positions())
+            atoms.set_positions(tem.get_positions())
             atoms.calc = SinglePointCalculator(atoms, energy=energy, forces=forces)
             atoms.info['key_value_pairs']['raw_score'] = -atoms.get_potential_energy()
             da.add_relaxed_step(atoms)
@@ -107,7 +107,7 @@ def produce_new_generation(da, mutation_probability):
         pair_cor_cum_diff=0.015,
         pair_cor_max=0.7,
         dE=0.02,
-        mic=False,
+        mic=True,
     )
 
     # Operations that will be performed for generate mutations

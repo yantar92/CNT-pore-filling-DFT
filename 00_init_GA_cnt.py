@@ -56,7 +56,7 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
     # Allow slightly smaller atom-atom distances
     seed.gentags.slack = 0.1
     # Minimum distances between atoms
-    seed.gentags.minsep = [5.0, {'C-C': 1, 'Na-Na': 3.59346, 'C-Na': 2}]
+    seed.gentags.minsep = [5.0, {'C-C': 1.4, 'Na-Na': 3.59346, 'C-Na': 2}]
     # Fix atoms by default (do not randomize)
     seed.gentags.fix = True
     # seed.gentags.cylinder = radius = (tube.cell[1, 1] - 2 * vacuum)/2
@@ -95,7 +95,8 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
     # create the database to store information in
     atom_numbers = number_Na * [11]  # 11 is atomic number of Na
     d = PrepareDB(
-        db_file_name=db_file, simulation_cell=cnt, stoichiometry=atom_numbers
+        db_file_name=db_file, simulation_cell=cnt, stoichiometry=atom_numbers,
+        population_size=len(starting_population),
     )
 
     for a in starting_population:
