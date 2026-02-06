@@ -67,7 +67,8 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             print(f"Created new relax VASP input at {relax_dir}")
             with chdir(relax_dir):
                 gorun.run()
-                return 'running'
+                submitted_jobs = True
+                continue
 
         if scf_dir.is_dir ():
             path = scf_dir
@@ -99,7 +100,8 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             print(f"Created new SCF VASP input at {scf_dir}")
             with chdir(path):
                 gorun.run()
-            return 'running'
+            submitted_jobs = True
+            continue
         elif slurm.directory_queued_p(path):
             print(f"VASP still running in {path}")
             return 'running'
