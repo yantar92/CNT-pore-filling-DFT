@@ -49,7 +49,7 @@ if __name__ == "__main__":
         description="Generate CNT and run relaxation.")
     parser.add_argument("n", type=int, help="(n, m) CNT")
     parser.add_argument("m", type=int, help="(n, m) CNT")
-    parser.add_argument("length", type=float, help="CNT length")
+    parser.add_argument("length", type=int, help="CNT length (repetitions)")
     parser.add_argument("--vacuum", type=float, default=20, help="CNT vacuum around (default: 20A)")
     args = parser.parse_args()
     main(args.n, args.m, args.length, args.vacuum)
