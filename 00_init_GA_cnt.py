@@ -13,7 +13,6 @@ import argparse
 import warnings
 import numpy as np
 from IMDgroup.pymatgen.io.vasp.vaspdir import IMDGVaspDir
-from ase.io import read
 from ase.constraints import FixAtoms
 from ase.ga.data import PrepareDB
 from airsspy import SeedAtoms, Buildcell
