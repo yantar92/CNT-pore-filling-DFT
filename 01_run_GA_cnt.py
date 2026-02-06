@@ -53,7 +53,8 @@ def relax_all_unrelaxed(da, vaspinput, directory):
         if path is None:
             idx = atoms.info['confid']
             generation = atoms.info['key_value_pairs']['generation']
-            atoms.info['data']['path'] = Path(f"{directory}/gen_{generation}_idx_{idx}").absolute()
+            path = Path(f"{directory}/gen_{generation}_idx_{idx}").absolute()
+            atoms.info['data']['path'] = path
         if not Path(path).is_dir():
             Path(path).mkdir()
             vaspinput.structure = AseAtomsAdaptor.get_structure(atoms)
