@@ -1,0 +1,29 @@
+#+TITLE: Ground state search code for Na insertion into CNT
+#+AUTHOR: Andres Usuga, Ihor Radchenko
+
+This code searches for ground state structures in carbon nanotubes
+filled with various concentrations of Na.
+
+This task is tricky as checking all possible Na configurations inside the CNT
+is not viable - there are too many. So, we need to take shortcuts.
+
+What we do:
+1. Use AIRSS [[https://www.mtg.msm.cam.ac.uk/Codes/AIRSS]] to generate
+   random trial structures for Na inside CNT. We use
+   https://github.com/zhubonan/airsspy for python bindings to AIRSS.
+2. Use [[https://dtu-energy.github.io/ase-ga/]] to search true ground states
+   efficiently, without having to sample the whole configuration space
+3. Use VASP to relax structures and obtain the energies.
+
+The code in this repository is a glue that automates structure search for any
+given CNT matrix.
+
+Keep in mind that CNT length may put constraints onto Na inside.
+Na tends to form BCC-like lattice inside CNT with relatively large
+radii, and that lattice may be constrained by boundary conditions.
+If the BCC lattice parameter does not align well with nanotube supercell,
+we may induce artificial strains, affecting Na energetics.
+In theory (one needs to check), a poorly chosen CNT length may even affect
+the ground state structures found by the code.
+
+
