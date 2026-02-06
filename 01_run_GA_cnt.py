@@ -56,7 +56,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             path = Path(f"{directory}/gen_{generation}_idx_{idx}").absolute()
             atoms.info['data']['path'] = path
         if not Path(path).is_dir():
-            Path(path).mkdir()
+            Path(path).mkdir(parents=True)
             vaspinput.structure = AseAtomsAdaptor.get_structure(atoms)
             vaspinput.write_input(output_dir=path)
             print(f"Created new VASP input at {path}")
