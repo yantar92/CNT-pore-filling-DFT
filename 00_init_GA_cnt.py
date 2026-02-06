@@ -44,6 +44,8 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
     cnt.cell[1, 1] = max([(x_max - x_min), (y_max - y_min)]) + vacuum
     cnt.translate([cnt.cell[0, 0]/2, cnt.cell[1, 1]/2, 0.0])
 
+    print(f"Read relaxed CNT: {cnt}")
+
     # Compute radius to limit AIRSS distortions
     radius_cnt = max(radius_atom_list(cnt))
 
