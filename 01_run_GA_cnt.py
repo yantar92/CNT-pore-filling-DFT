@@ -57,11 +57,24 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             atoms.info['data']['path'] = path
         if not Path(path).is_dir():
             Path(path).mkdir(parents=True)
+        relax_dir = Path(path) / "relax"
+        scf_dir = Path(path) / "relax.SCF"
+
+        if not relax_dir.is_dir():
+            relax_dir.mkdir(parents=True)
             vaspinput.structure = AseAtomsAdaptor.get_structure(atoms)
             vaspinput.write_input(output_dir=path)
-            print(f"Created new VASP input at {path}")
+            print(f"Created new relax VASP input at {relax_dir}")
+            with chdir(relax_dir):
+                gorun.run()
+                return 'running'
+
+        if scf_dir.is_dir ():
+            path = scf_dir
+        else:
+            path = relax_dir
         vaspdir = IMDGVaspDir(path)
-        if vaspdir.converged:
+        if vaspdir.converged and path == scf_dir:
             tem = None
             try:
                 tem = read(path / 'OUTCAR', index=-1)
@@ -76,6 +89,17 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             atoms.info['key_value_pairs']['raw_score'] = -atoms.get_potential_energy()
             da.add_relaxed_step(atoms)
             print(f"Added relaxed {path}")
+        elif vaspdir.converged and path == relax_dir:
+            inputset = IMDDerivedInputSet(
+                name="SCF",
+                directory=str(relax_dir),
+                user_incar_settings={'NSW': 0, 'IBRION': -1, 'ISMEAR': -5},
+            )
+            inputset.write_input(scf_dir)
+            print(f"Created new SCF VASP input at {scf_dir}")
+            with chdir(path):
+                gorun.run()
+            return 'running'
         elif slurm.directory_queued_p(path):
             print(f"VASP still running in {path}")
             return 'running'
