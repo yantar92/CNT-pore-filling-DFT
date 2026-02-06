@@ -63,7 +63,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
         if not relax_dir.is_dir():
             relax_dir.mkdir(parents=True)
             vaspinput.structure = AseAtomsAdaptor.get_structure(atoms)
-            vaspinput.write_input(output_dir=path)
+            vaspinput.write_input(output_dir=relax_dir)
             print(f"Created new relax VASP input at {relax_dir}")
             with chdir(relax_dir):
                 gorun.run()
