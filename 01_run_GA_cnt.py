@@ -104,7 +104,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             continue
         elif slurm.directory_queued_p(path):
             print(f"VASP still running in {path}")
-            return 'running'
+            submitted_jobs = True
         elif 'CONTCAR' in vaspdir:
             print(f"VASP unconverged in {path}")
             return 'unconverged'
