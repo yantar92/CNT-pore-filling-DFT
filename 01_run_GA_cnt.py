@@ -150,7 +150,7 @@ def produce_new_generation(da, mutation_probability):
         size += 1
 
 
-def run_ga(db_file, reference_vasp, mutation_probability=0.3):
+def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=None):
     """Find ground states for seed structures from DB_FILE using generic algorithm.
     Use REFERENCE_VASP for INCAR setup
     1. Relax unrelaxed seed structures.
@@ -178,7 +178,11 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3):
         )
 
     while True:
-        print(f"Generation {da.get_generation_number()}")
+        generation = da.get_generation_number()
+        if max_generations and generation > max_generations:
+            print(f"Reached maximum number of generations")
+            sys.exit(0)
+        print(f"Generation {generation}")
         status = relax_all_unrelaxed(da, vaspinput, f"{n_to_optimize}_Na")
         if status == 'unconverged':
             exit_saving_db()
@@ -197,5 +201,6 @@ if __name__ == "__main__":
     parser.add_argument("structure_db", type=str, help="Path to structure DB")
     parser.add_argument("cnt_ref", type=str, help="Path to reference VASP calculation to get settings from")
     parser.add_argument("--mutation_probability", type=float, default=0.3, help="Mutation probability")
+    parser.add_argument("--max_generations", type=int, default=10, help="Maximum number of generations to produce")
     args = parser.parse_args()
-    run_ga(args.structure_db, args.cnt_ref, args.mutation_probability)
+    run_ga(args.structure_db, args.cnt_ref, args.mutation_probability, args.max_generations)
