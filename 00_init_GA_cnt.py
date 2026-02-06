@@ -77,7 +77,7 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
             atom.num = number_Na
             # Na to be placed in the middle of the CNT and randomized from there
             atom.position = [seed.cell[0, 0]/2, seed.cell[1, 1]/ 2, 0]
-    # print('\n'.join(seed.get_cell_inp_lines()))
+    print('\n'.join(seed.get_cell_inp_lines()))
     bc = Buildcell(seed)
 
     starting_population = []
