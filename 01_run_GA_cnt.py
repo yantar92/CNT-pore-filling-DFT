@@ -12,9 +12,9 @@ from random import random
 import os
 from pathlib import Path
 from contextlib import chdir
-# from ase.calculators.emt import EMT
 from IMDgroup.pymatgen.io.vasp.sets import IMDDerivedInputSet
 from IMDgroup.gorun import gorun
+from IMDgroup.gorun import slurm
 from ase.ga.cutandsplicepairing import CutAndSplicePairing
 from ase.ga.data import DataConnection
 from ase.ga.offspring_creator import OperationSelector
@@ -75,6 +75,9 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             atoms.info['key_value_pairs']['raw_score'] = -atoms.get_potential_energy()
             da.add_relaxed_step(atoms)
             print(f"Added relaxed {path}")
+        elif slurm.directory_queued_p(path):
+            print(f"VASP still running in {path}")
+            return 'running'
         elif 'CONTCAR' in vaspdir:
             print(f"VASP unconverged in {path}")
             return 'unconverged'
