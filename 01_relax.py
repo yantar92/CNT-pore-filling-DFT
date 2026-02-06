@@ -18,14 +18,15 @@ from IMDgroup.pymatgen.io.vasp.inputs import Incar
 from IMDgroup.gorun import gorun
 
 
-def main():
+def main(n, m, length, vacuum=20):
     """Build VASP input for CNT and run VASP.
+    CNT has n,m chirality, length, and adds vacuum space around.
     """
     # Modify the quirality to create a new CNT
-    struc_base_sc = nanotube(15, 0, length=1, vacuum=20)
+    struc_base_sc = nanotube(n, m, length=length, vacuum=vacuum)
 
     vasp_input = IMDStandardVaspInputSet_relax(
-        name='CNT_relax',
+        name=f'CNT_{n},{m}_{length}_{vacuum}',
         functional='pbe',
         structure=AseAtomsAdaptor.get_structure(struc_base_sc),
         user_incar_settings={
@@ -39,10 +40,16 @@ def main():
 
     with chdir(vasp_input.name):
         gorun.run(argparse.Namespace(
-            number_of_nodes = "1",
-            time_limit = "24:00:00",
-            mark = True,
+            number_of_nodes="1",
+            time_limit="24:00:00",
         ))
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Generate CNT and run relaxation.")
+    parser.add_argument("n", type=int, help="(n, m) CNT")
+    parser.add_argument("m", type=int, help="(n, m) CNT")
+    parser.add_argument("length", type=float, help="CNT length")
+    parser.add_argument("--vacuum", type=float, default=20, help="CNT vacuum around (default: 20A)")
+    args = parser.parse_args()
+    main(args.n, args.m, args.length, args.vacuum)
