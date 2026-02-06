@@ -167,7 +167,7 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
     atom_numbers_to_optimize = da.get_atom_numbers_to_optimize()
     n_to_optimize = len(atom_numbers_to_optimize)
 
-    def exit_saving_db():
+    def exit_restoring_db():
         shutil.copyfile('back_up.db', db_file)
         sys.exit(1)
 
@@ -185,7 +185,7 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
         print(f"Generation {generation}")
         status = relax_all_unrelaxed(da, vaspinput, f"{n_to_optimize}_Na")
         if status == 'unconverged':
-            exit_saving_db()
+            exit_restoring_db()
         elif status == 'running':
             time.sleep(600)
         elif status == 'converged':
