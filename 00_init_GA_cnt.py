@@ -50,6 +50,7 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
     radius_cnt = max(radius_atom_list(cnt))
 
     # Add Na at 0,0,0 to be randomized by AIRSS
+    cnt_origin = cnt.copy()
     cnt.extend(Atoms('Na'))
     seed = SeedAtoms(cnt)
     seed.gentags.supercell = '1 1 1'
@@ -95,7 +96,7 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
     # create the database to store information in
     atom_numbers = number_Na * [11]  # 11 is atomic number of Na
     d = PrepareDB(
-        db_file_name=db_file, simulation_cell=cnt, stoichiometry=atom_numbers,
+        db_file_name=db_file, simulation_cell=cnt_origin, stoichiometry=atom_numbers,
         population_size=len(starting_population),
     )
 
