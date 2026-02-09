@@ -49,6 +49,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
     """
     submitted_jobs = False
     for atoms in da.get_all_unrelaxed_candidates():
+        atoms = atoms.copy()
         path = atoms.info['data'].get('path', None)
         if path is None:
             idx = atoms.info['confid']
