@@ -58,7 +58,7 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
     seed.gentags.slack = 0.1
     # Minimum distances between atoms
     seed.gentags.minsep = [5.0, {'C-C': 1.4, 'Na-Na': 3.59346, 'C-Na': 2}]
-    # seed.gentags.fix = False
+    seed.gentags.fix = True
     # seed.gentags.cylinder = radius = (tube.cell[1, 1] - 2 * vacuum)/2
     for atom in seed:
         if atom.symbol == 'C':
