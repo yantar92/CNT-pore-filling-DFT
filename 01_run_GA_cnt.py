@@ -98,7 +98,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             )
             inputset.write_input(scf_dir)
             print(f"Created new SCF VASP input at {scf_dir}")
-            with chdir(path):
+            with chdir(scf_dir):
                 gorun.run()
             submitted_jobs = True
             continue
