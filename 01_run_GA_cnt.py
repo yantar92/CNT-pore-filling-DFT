@@ -160,10 +160,9 @@ def produce_new_generation(da, mutation_probability):
         data_connection=da, population_size=population_size, comparator=comp
     )
 
-    size = 0
     print(f'Creating new population of size {population_size}')
-    while size < population_size:
-        print(size, end=' ')
+    size = 0
+    for _ in range(population_size):
         a1, a2 = population.get_two_candidates()
         a3, desc = pairing.get_new_individual([a1, a2])
         if a3 is None:
@@ -176,6 +175,9 @@ def produce_new_generation(da, mutation_probability):
                 da.add_unrelaxed_step(a3_mut, desc)
                 a3 = a3_mut
         size += 1
+    if size == 0:
+        print("No new offspring can be created. Aborting")
+        sys.exit(1)
 
 
 def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=None):
