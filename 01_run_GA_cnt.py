@@ -103,7 +103,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 gorun.run()
             submitted_jobs = True
             continue
-        elif Path('RUNNING').is_file() or slurm.directory_queued_p(path):
+        elif (path / 'RUNNING').is_file() or slurm.directory_queued_p(path):
             print(f"VASP still running in {path}")
             submitted_jobs = True
         elif (path / 'CONTCAR').is_file():
