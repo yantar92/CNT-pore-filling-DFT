@@ -163,6 +163,7 @@ def produce_new_generation(da, mutation_probability):
     size = 0
     print(f'Creating new population of size {population_size}')
     while size < population_size:
+        print(size, end=' ')
         a1, a2 = population.get_two_candidates()
         a3, desc = pairing.get_new_individual([a1, a2])
         if a3 is None:
