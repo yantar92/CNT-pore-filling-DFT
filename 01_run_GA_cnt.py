@@ -191,14 +191,14 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
         print("File with seeds and candidates does not exist")
         sys.exit(1)
 
-    shutil.copyfile(db_file, 'back_up.db')
+    shutil.copyfile(db_file, db_file + '.bak')
     da = DataConnection(db_file)
     # Get atomic number of specie to optimize
     atom_numbers_to_optimize = da.get_atom_numbers_to_optimize()
     n_to_optimize = len(atom_numbers_to_optimize)
 
     def exit_restoring_db():
-        shutil.copyfile('back_up.db', db_file)
+        shutil.copyfile(db_file + '.bak', db_file)
         sys.exit(1)
 
     vaspinput = IMDDerivedInputSet(
