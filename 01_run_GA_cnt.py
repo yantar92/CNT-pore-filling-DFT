@@ -96,7 +96,11 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             inputset = IMDDerivedInputSet(
                 name="SCF",
                 directory=str(relax_dir),
-                user_incar_settings={'NSW': 0, 'IBRION': -1, 'ISMEAR': -5},
+                user_incar_settings={
+                    'NSW': 0, 'IBRION': -1, 'ISMEAR': -5,
+                    # Some runs crash with ALGO = Normal
+                    # NCORE = 16 and 8 also sometimes crash
+                    'NELM': 200, 'ALGO': 'All', 'NCORE': 4},
             )
             inputset.write_input(scf_dir)
             print(f"Created new SCF VASP input at {scf_dir}")
