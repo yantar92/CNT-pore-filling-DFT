@@ -48,6 +48,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
     Return 'unconverged' when any of the structures failed to converge.
     """
     submitted_jobs = False
+    has_unconverged = False
     for atoms in da.get_all_unrelaxed_candidates():
         atoms = atoms.copy()
         path = atoms.info['data'].get('path', None)
@@ -108,7 +109,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             submitted_jobs = True
         elif (path / 'CONTCAR').is_file():
             print(f"VASP unconverged in {path}")
-            return 'unconverged'
+            has_unconverged = True
         else:
             with chdir(path):
                 gorun.run()
@@ -116,6 +117,9 @@ def relax_all_unrelaxed(da, vaspinput, directory):
     if submitted_jobs:
         print("Submitted slurm jobs. Waiting for them to finish")
         return 'running'
+    if has_unconverged:
+        print("No more jobs to run and unconverged jobs found. Check manually. Exiting")
+        return 'unconverged'
     return 'converged'
 
 
