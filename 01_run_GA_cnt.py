@@ -40,6 +40,7 @@ from IMDgroup.pymatgen.io.vasp.vaspdir import IMDGVaspDir
 import argparse
 import shutil
 
+GORUN_ARGS = argparse.Namespace(mark=True)
 
 def relax_all_unrelaxed(da, vaspinput, directory):
     """Relax all unrelaxed structures in DA using VASPINPUT reference.
@@ -68,7 +69,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             vaspinput.write_input(output_dir=relax_dir)
             print(f"Created new relax VASP input at {relax_dir}")
             with chdir(relax_dir):
-                gorun.run()
+                gorun.run(GORUN_ARGS)
                 submitted_jobs = True
                 continue
 
@@ -105,7 +106,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             inputset.write_input(scf_dir)
             print(f"Created new SCF VASP input at {scf_dir}")
             with chdir(scf_dir):
-                gorun.run()
+                gorun.run(GORUN_ARGS)
             submitted_jobs = True
             continue
         elif (path / 'RUNNING').is_file() or slurm.directory_queued_p(path):
@@ -116,7 +117,10 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             has_unconverged = True
         else:
             with chdir(path):
-                gorun.run()
+                if (path / 'gorun_ready').is_file():
+                    print(f'Please submit VASP run in {path}')
+                else:
+                    gorun.run(GORUN_ARGS)
                 submitted_jobs = True
     if submitted_jobs:
         print("Submitted slurm jobs. Waiting for them to finish")
