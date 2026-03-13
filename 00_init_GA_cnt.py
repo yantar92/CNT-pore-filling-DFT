@@ -11,6 +11,7 @@ Use AIRSS.
 import os
 import argparse
 import warnings
+import subprocess
 import numpy as np
 from IMDgroup.pymatgen.io.vasp.vaspdir import IMDGVaspDir
 from ase.constraints import FixAtoms
@@ -119,4 +120,9 @@ if __name__ == "__main__":
     parser.add_argument("--vacuum", type=float, default=15.0, help="Vacuum to surround CNT with")
 
     args = parser.parse_args()
+    try:
+        subprocess.check_output(['buildcell', '-v'])
+    except subprocess.CalledProcessError:
+        print("Cannot run buildcell. Check installation.")
+        exit(1)
     main(args)
