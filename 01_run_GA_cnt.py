@@ -91,7 +91,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
 
             tem_forces = tem.get_forces()
             new_positions = np.zeros_like(atoms.positions)
-            new_forces = np.zeros_like(tem.forces)
+            new_forces = np.zeros_like(tem_forces)
             for symbol in set(tem.get_chemical_symbols()):
                 src_idx = [i for i, sym in enumerate(tem.get_chemical_symbols()) if sym == symbol]
                 tgt_idx = [i for i, sym in enumerate(atoms.get_chemical_symbols()) if sym == symbol]
