@@ -87,14 +87,20 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 print(f"Error reading {path}: {e}")
                 return False
             assert tem is not None
-            atoms = atoms[np.argsort(atoms.symbols)]
-            tem_idxs = np.argsort(tem.symbols)
             energy = tem.get_potential_energy()
-            forces = tem.get_forces()
-            forces = forces[tem_idxs]
-            tem = tem[tem_idxs]
-            atoms.set_positions(tem.get_positions())
-            atoms.calc = SinglePointCalculator(atoms, energy=energy, forces=forces)
+
+            tem_forces = tem.get_forces()
+            new_positions = np.zeros_like(atoms.positions)
+            new_forces = np.zeros_like(tem.forces)
+            for symbol in set(tem.get_chemical_symbols()):
+                src_idx = [i for i, sym in enumerate(tem.get_chemical_symbols()) if sym == symbol]
+                tgt_idx = [i for i, sym in enumerate(atoms.get_chemical_symbols()) if sym == symbol]
+                for tgt, src in zip(tgt_idx, src_idx):
+                    new_positions[tgt] = tem.positions[src]
+                    new_forces[tgt] = tem_forces[src]
+
+            atoms.set_positions(new_positions)
+            atoms.calc = SinglePointCalculator(atoms, energy=energy, forces=new_forces)
             atoms.info['key_value_pairs']['raw_score'] = -atoms.get_potential_energy()
             da.add_relaxed_step(atoms)
             print(f"Added relaxed {path}")
