@@ -260,6 +260,6 @@ if __name__ == "__main__":
     parser.add_argument("structure_db", type=str, help="Path to structure DB")
     parser.add_argument("cnt_ref", type=str, help="Path to reference VASP calculation to get settings from")
     parser.add_argument("--mutation_probability", type=float, default=0.3, help="Mutation probability")
-    parser.add_argument("--max_generations", type=int, default=10, help="Maximum number of generations to produce")
+    parser.add_argument("--max_generations", type=int, default=4, help="Maximum number of generations to produce")
     args = parser.parse_args()
     run_ga(args.structure_db, args.cnt_ref, args.mutation_probability, args.max_generations)
