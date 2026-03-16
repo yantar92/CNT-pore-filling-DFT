@@ -190,13 +190,14 @@ def produce_new_generation(da, mutation_probability):
         a3, desc = pairing.get_new_individual([a1, a2])
         if a3 is None:
             continue
-        da.add_unrelaxed_candidate(a3, description=desc)
         # Check if we want to do a mutation
         if random() < mutation_probability:
             a3_mut, desc = mutations.get_new_individual([a3])
             if a3_mut is not None:
-                da.add_unrelaxed_step(a3_mut, desc)
+                da.add_unrelaxed_candidate(a3_mut, desc)
                 a3 = a3_mut
+        else:
+            da.add_unrelaxed_candidate(a3, description=desc)
         size += 1
     if size == 0:
         print("No new offspring can be created. Aborting")
