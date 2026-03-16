@@ -88,9 +88,11 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 return False
             assert tem is not None
             atoms = atoms[np.argsort(atoms.symbols)]
-            tem = tem[np.argsort(tem.symbols)]
+            tem_idxs = np.argsort(tem.symbols)
             energy = tem.get_potential_energy()
             forces = tem.get_forces()
+            forces = forces[tem_idxs]
+            tem = tem[tem_idxs]
             atoms.set_positions(tem.get_positions())
             atoms.calc = SinglePointCalculator(atoms, energy=energy, forces=forces)
             atoms.info['key_value_pairs']['raw_score'] = -atoms.get_potential_energy()
