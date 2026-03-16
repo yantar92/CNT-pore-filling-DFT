@@ -12,6 +12,7 @@ from random import random
 import os
 from pathlib import Path
 from contextlib import chdir
+import numpy as np
 from IMDgroup.pymatgen.io.vasp.sets import IMDDerivedInputSet
 from IMDgroup.gorun import gorun
 from IMDgroup.gorun import slurm
@@ -86,6 +87,8 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 print(f"Error reading {path}: {e}")
                 return False
             assert tem is not None
+            atoms = atoms[np.argsort(atoms.symbols)]
+            tem = tem[np.argsort(tem.symbols)]
             energy = tem.get_potential_energy()
             forces = tem.get_forces()
             atoms.set_positions(tem.get_positions())
