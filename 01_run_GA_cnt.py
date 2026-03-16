@@ -192,6 +192,11 @@ def produce_new_generation(da, mutation_probability):
             continue
         # Check if we want to do a mutation
         if random() < mutation_probability:
+            # This is necessary because add_unrelaxed_candidate
+            # sets parent guid and get_new_individual later fails
+            # if we try to mutate something without guid.
+            da.add_unrelaxed_candidate(a3, description=desc)
+            size += 1
             a3_mut, desc = mutations.get_new_individual([a3])
             if a3_mut is not None:
                 da.add_unrelaxed_candidate(a3_mut, desc)
