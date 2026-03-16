@@ -85,6 +85,8 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
     starting_population = []
     for _ in range(size_seeds):
         atoms = bc.generate(timeout=100)
+        # FIXME: Why??
+        atoms.set_pbc(True)
         print(atoms)
         mask_atoms = [f == 'C' for f in atoms.get_chemical_symbols()]
         # We will not allow carbons to move during relaxation later.
