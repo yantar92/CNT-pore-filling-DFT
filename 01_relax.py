@@ -10,16 +10,53 @@ Create a CNT structure and run relaxation.
 import os
 import subprocess
 import argparse
+from pathlib import Path
 from contextlib import chdir
 import numpy as np
 from ase.build import nanotube
 from pymatgen.io.ase import AseAtomsAdaptor
+from pymatgen.io.vasp.inputs import Kpoints
 from IMDgroup.pymatgen.io.vasp.sets import IMDStandardVaspInputSet_relax
 from IMDgroup.pymatgen.io.vasp.inputs import Incar
 from IMDgroup.gorun import gorun
 
 
-def main(n, m, length, vacuum=20, defect=None, encut=500, density=6000):
+INCAR_PY = """
+import numpy as np
+from ase.eos import EquationOfState
+from ase.io import read
+
+# 1. Create your configurations (looping over z-lengths)
+# Assume 'atoms' is your starting structure
+z_original = atoms.cell[2, 2]
+z_factors = np.linspace(0.98, 1.02, 7) # 7 points is usually enough
+energies = []
+volumes = []
+
+for f in z_factors:
+    atoms.cell[2, 2] = z_original * f
+    # Important: scale_atoms=True moves atoms proportionally in z
+    atoms.set_cell(atoms.cell, scale_atoms=True)
+    energies.append(atoms.get_potential_energy())
+    volumes.append(atoms.get_volume())
+
+# 2. Fit the data
+# Even though we varied Z, we fit Energy vs. Volume
+eos = EquationOfState(volumes, energies)
+v0, e0, B = eos.fit()
+
+# 3. Calculate your optimal Z from the optimal Volume
+opt_z = v0 / (atoms.cell[0,0] * atoms.cell[1,1] * np.sin(np.deg2rad(atoms.cell.cellpar()[5])))
+
+atoms.cell[2, 2] = opt_z
+# Important: scale_atoms=True moves atoms proportionally in z
+atoms.set_cell(atoms.cell, scale_atoms=True)
+atoms.get_potential_energy()
+print(f"Optimal z-length: {opt_z}")
+"""
+
+
+def main(n, m, length, vacuum=20, defect=None, encut=500, density="6000"):
     """Build VASP input for CNT and run VASP.
     CNT has n,m chirality, length, and adds vacuum space around.
     """
@@ -39,6 +76,13 @@ def main(n, m, length, vacuum=20, defect=None, encut=500, density=6000):
     else:
         raise ValueError(f'Unknown defect type: {defect}')
 
+    if "," in density:
+        tpl = tuple(int(x) for x in density.split(","))
+        assert len(tpl) == 3
+        kpoints_settings = Kpoints.gamma_automatic(kpts=tpl),
+    else:
+        kpoints_settings = {'grid_density': float(density)}
+
     vasp_input = IMDStandardVaspInputSet_relax(
         name=f'CNT_{n},{m}_{length}_{vacuum}',
         functional='pbe',
@@ -47,10 +91,12 @@ def main(n, m, length, vacuum=20, defect=None, encut=500, density=6000):
             'ENCUT': encut,
             'ISIF': Incar.ISIF_RELAX_POS,
             'IBRION': Incar.IBRION_IONIC_RELAX_CGA},
-        user_kpoints_settings={'grid_density': density},
+        user_kpoints_settings=kpoints_settings,
     )
 
     vasp_input.write_input(output_dir=vasp_input.name)
+    with open(Path(vasp_input.name) / "INCAR.py", "w") as f:
+        f.write(INCAR_PY)
 
     with chdir(vasp_input.name):
         gorun.run(argparse.Namespace(
@@ -68,6 +114,6 @@ if __name__ == "__main__":
     parser.add_argument("--vacuum", type=float, default=20, help="CNT vacuum around (default: 20A)")
     parser.add_argument("--defect", type=str, default=None, help="Defect to introduce (MV, DV, SW)")
     parser.add_argument("--encut", type=float, default=500, help="ENCUT (default: 500eV)")
-    parser.add_argument("--kpoints", type=float, default=6000, help="Kpoint density (default: 6000)")
+    parser.add_argument("--kpoints", type=str, default="6000", help="Kpoint density (default: 6000) or gamm grid like 1, 1, 2")
     args = parser.parse_args()
     main(args.n, args.m, args.length, args.vacuum, args.defect, args.encut, args.kpoints)
