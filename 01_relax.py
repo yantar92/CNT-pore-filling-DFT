@@ -89,6 +89,7 @@ def main(n, m, length, vacuum=20, defect=None, encut=500, density="6000", functi
         structure=cnt_struct,
         user_incar_settings={
             'ENCUT': encut,
+            'ALGO': 'Normal' if functional == 'pbe' else 'All',
             'ISIF': Incar.ISIF_RELAX_POS,
             'IBRION': Incar.IBRION_IONIC_RELAX_CGA},
         user_kpoints_settings=kpoints_settings,
