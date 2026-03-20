@@ -56,7 +56,7 @@ print(f"Optimal z-length: {opt_z}")
 """
 
 
-def main(n, m, length, vacuum=20, defect=None, encut=500, density="6000"):
+def main(n, m, length, vacuum=20, defect=None, encut=500, density="6000", functional="pbe"):
     """Build VASP input for CNT and run VASP.
     CNT has n,m chirality, length, and adds vacuum space around.
     """
@@ -85,7 +85,7 @@ def main(n, m, length, vacuum=20, defect=None, encut=500, density="6000"):
 
     vasp_input = IMDStandardVaspInputSet_relax(
         name=f'CNT_{n},{m}_{length}_{vacuum}',
-        functional='optB88-vdW',
+        functional=functional,
         structure=cnt_struct,
         user_incar_settings={
             'ENCUT': encut,
@@ -113,7 +113,8 @@ if __name__ == "__main__":
     parser.add_argument("length", type=int, help="CNT length (repetitions)")
     parser.add_argument("--vacuum", type=float, default=20, help="CNT vacuum around (default: 20A)")
     parser.add_argument("--defect", type=str, default=None, help="Defect to introduce (MV, DV, SW)")
+    parser.add_argument("--functional", type=str, default="pbe", help="Functional to use")
     parser.add_argument("--encut", type=float, default=500, help="ENCUT (default: 500eV)")
     parser.add_argument("--kpoints", type=str, default="6000", help="Kpoint density (default: 6000) or gamm grid like 1, 1, 2")
     args = parser.parse_args()
-    main(args.n, args.m, args.length, args.vacuum, args.defect, args.encut, args.kpoints)
+    main(args.n, args.m, args.length, args.vacuum, args.defect, args.encut, args.kpoints, args.functional)
