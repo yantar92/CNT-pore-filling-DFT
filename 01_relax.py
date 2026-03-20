@@ -45,7 +45,7 @@ def main(n, m, length, vacuum=20, defect=None, encut=500, density=6000):
         structure=cnt_struct,
         user_incar_settings={
             'ENCUT': encut,
-            'ISIF': Incar.ISIF_FIX_NONE,
+            'ISIF': Incar.ISIF_RELAX_POS,
             'IBRION': Incar.IBRION_IONIC_RELAX_CGA},
         user_kpoints_settings={'grid_density': density},
     )
@@ -56,6 +56,7 @@ def main(n, m, length, vacuum=20, defect=None, encut=500, density=6000):
         gorun.run(argparse.Namespace(
             number_of_nodes="1",
             time_limit="24:00:00",
+            mark=True,
         ))
 
 if __name__ == "__main__":
