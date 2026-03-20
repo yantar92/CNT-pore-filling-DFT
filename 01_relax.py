@@ -79,7 +79,7 @@ def main(n, m, length, vacuum=20, defect=None, encut=500, density="6000"):
     if "," in density:
         tpl = tuple(int(x) for x in density.split(","))
         assert len(tpl) == 3
-        kpoints_settings = Kpoints.gamma_automatic(kpts=tpl),
+        kpoints_settings = Kpoints.gamma_automatic(kpts=tpl)
     else:
         kpoints_settings = {'grid_density': float(density)}
 
