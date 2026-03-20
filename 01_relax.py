@@ -85,7 +85,7 @@ def main(n, m, length, vacuum=20, defect=None, encut=500, density="6000"):
 
     vasp_input = IMDStandardVaspInputSet_relax(
         name=f'CNT_{n},{m}_{length}_{vacuum}',
-        functional='pbe',
+        functional='optB88-vdW',
         structure=cnt_struct,
         user_incar_settings={
             'ENCUT': encut,
