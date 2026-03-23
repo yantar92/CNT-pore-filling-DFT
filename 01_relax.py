@@ -54,8 +54,11 @@ opt_z = v0 / (atoms.cell[0,0] * atoms.cell[1,1] * np.sin(np.deg2rad(atoms.cell.c
 atoms.cell[2, 2] = opt_z
 # Important: scale_atoms=True moves atoms proportionally in z
 atoms.set_cell(atoms.cell, scale_atoms=True)
-atoms.get_potential_energy()
-print(f"Optimal z-length: {opt_z}")
+energies.append(atoms.get_potential_energy())
+print(f"Optimal z-length: {opt_z}, E = {energies[-1]}")
+for f, energy in zip(z_factors, energies):
+    print(f"{z_original * f} {energy}")
+print(f"{opt_z} {energies[-1]}")
 """
 
 
