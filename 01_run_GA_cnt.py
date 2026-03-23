@@ -233,7 +233,6 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
     vaspinput = IMDDerivedInputSet(
         directory=reference_vasp,
         user_incar_settings={"ISIF": 2, 'IBRION': 2},
-        user_kpoints_settings={'grid_density': 6000}
         )
 
     while True:
