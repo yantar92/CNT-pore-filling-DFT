@@ -26,10 +26,13 @@ import numpy as np
 from ase.eos import EquationOfState
 from ase.io import read
 
+
+SCAN_THRESHOLD = 0.04 # scan threshold
+
 # 1. Create your configurations (looping over z-lengths)
 # Assume 'atoms' is your starting structure
 z_original = atoms.cell[2, 2]
-z_factors = np.linspace(0.98, 1.02, 7) # 7 points is usually enough
+z_factors = np.linspace(1 - SCAN_THRESHOLD, 1 + SCAN_THRESHOLD, 7) # 7 points is usually enough
 energies = []
 volumes = []
 
