@@ -108,7 +108,6 @@ def main(n, m, length, vacuum=20, defect=None, encut=500, density="6000", functi
     with chdir(vasp_input.name):
         gorun.run(argparse.Namespace(
             number_of_nodes="1",
-            time_limit="24:00:00",
             mark=True,
         ))
 
