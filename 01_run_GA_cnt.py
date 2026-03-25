@@ -232,7 +232,8 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
 
     vaspinput = IMDDerivedInputSet(
         directory=reference_vasp,
-        user_incar_settings={"ISIF": 2, 'IBRION': 2},
+        # Increase NSW as it is not enough for some CNT
+        user_incar_settings={"ISIF": 2, 'IBRION': 2, 'NSW': 1000},
         force_prev_kpoints_file=True,
         )
 
