@@ -62,6 +62,8 @@ def relax_all_unrelaxed(da, vaspinput, directory):
         if not Path(path).is_dir():
             Path(path).mkdir(parents=True)
         relax_dir = Path(path) / "relax"
+        relax2_dir = Path(path) / "relax.2"
+        # !! We do not use SCF here, but instead limit reuse relax2
         scf_dir = Path(path) / "relax.SCF"
 
         if not relax_dir.is_dir():
@@ -74,12 +76,14 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 submitted_jobs = True
                 continue
 
-        if scf_dir.is_dir ():
-            path = scf_dir
+        # if scf_dir.is_dir ():
+        #     path = scf_dir
+        if relax2_dir.is_dir():
+            path = relax2_dir
         else:
             path = relax_dir
         vaspdir = IMDGVaspDir(path)
-        if vaspdir.converged and path == scf_dir:
+        if vaspdir.converged and path == relax2_dir:
             tem = None
             try:
                 tem = read(path / 'OUTCAR', index=-1)
@@ -106,22 +110,40 @@ def relax_all_unrelaxed(da, vaspinput, directory):
             print(f"Added relaxed {path}")
         elif vaspdir.converged and path == relax_dir:
             inputset = IMDDerivedInputSet(
-                name="SCF",
+                name="2",
                 directory=str(relax_dir),
+                # Fine-relax with accurate forces and IBRION=1
                 user_incar_settings={
-                    'ENCUT': 550,
-                    'NSW': 0, 'IBRION': -1, 'ISMEAR': -5,
-                    # Some runs crash with ALGO = Normal
-                    # NCORE = 16 and 8 also sometimes crash
-                    'NELM': 200, 'ALGO': 'All', 'NCORE': 4},
-                user_kpoints_settings={'grid_density': 10000}
+                    'EFIFFG': -0.01,
+                    'IBRION': 1
+                },
             )
-            inputset.write_input(scf_dir)
-            print(f"Created new SCF VASP input at {scf_dir}")
-            with chdir(scf_dir):
+            # Fine kpoint grid
+            inputset.prev_kpoints = KPoints(kpts=[(1,1,8)])
+            inputset.write_input(relax2_dir)
+            print(f"Created new fine-relax VASP input at {relax2_dir}")
+            with chdir(relax2_dir):
                 gorun.run(GORUN_ARGS)
             submitted_jobs = True
             continue
+        # elif vaspdir.converged and path == scf_dir:
+        #     inputset = IMDDerivedInputSet(
+        #         name="SCF",
+        #         directory=str(relax_dir),
+        #         user_incar_settings={
+        #             'ENCUT': 550,
+        #             'NSW': 0, 'IBRION': -1, 'ISMEAR': -5,
+        #             # Some runs crash with ALGO = Normal
+        #             # NCORE = 16 and 8 also sometimes crash
+        #             'NELM': 200, 'ALGO': 'All', 'NCORE': 4},
+        #         user_kpoints_settings={'grid_density': 10000}
+        #     )
+        #     inputset.write_input(scf_dir)
+        #     print(f"Created new SCF VASP input at {scf_dir}")
+        #     with chdir(scf_dir):
+        #         gorun.run(GORUN_ARGS)
+        #     submitted_jobs = True
+        #     continue
         elif (path / 'RUNNING').is_file() or slurm.directory_queued_p(path):
             print(f"VASP still running in {path}")
             submitted_jobs = True
@@ -233,12 +255,17 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
         shutil.copyfile(db_file + '.bak', db_file)
         sys.exit(1)
 
+    # Coarse initial relaxation
     vaspinput = IMDDerivedInputSet(
         directory=reference_vasp,
-        # Increase NSW as it is not enough for some CNT
-        user_incar_settings={"ISIF": 2, 'IBRION': 2, 'NSW': 1000},
-        force_prev_kpoints_file=True,
+        user_incar_settings={
+            "ISIF": 2,
+            'IBRION': 2,
+            'EDIFFG': -0.1,
+            },
         )
+    # Force coarse Kpoints initially
+    vaspinput.prev_kpoints = KPoints(kpts=[(1,1,2)])
 
     while True:
         generation = da.get_generation_number()
