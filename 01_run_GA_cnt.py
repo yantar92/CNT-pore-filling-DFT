@@ -149,7 +149,8 @@ def produce_new_generation(da, mutation_probability):
     """
     atom_numbers_to_optimize = da.get_atom_numbers_to_optimize()
     n_to_optimize = len(atom_numbers_to_optimize)
-    population_size = int(len(list(da.c.select(generation=0)))/2)
+    # population_size = int(len(list(da.c.select(generation=0)))/2)
+    population_size = 10
     # Load function to measure distance between atoms
     cnt = da.get_slab()
     all_atom_types = get_all_atom_types(cnt, atom_numbers_to_optimize)
