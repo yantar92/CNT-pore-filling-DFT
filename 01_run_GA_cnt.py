@@ -109,10 +109,12 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 name="SCF",
                 directory=str(relax_dir),
                 user_incar_settings={
+                    'ENCUT': 550,
                     'NSW': 0, 'IBRION': -1, 'ISMEAR': -5,
                     # Some runs crash with ALGO = Normal
                     # NCORE = 16 and 8 also sometimes crash
                     'NELM': 200, 'ALGO': 'All', 'NCORE': 4},
+                user_kpoints_settings={'grid_density': 10000}
             )
             inputset.write_input(scf_dir)
             print(f"Created new SCF VASP input at {scf_dir}")
