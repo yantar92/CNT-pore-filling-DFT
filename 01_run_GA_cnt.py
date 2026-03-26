@@ -127,7 +127,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 },
             )
             # Fine kpoint grid
-            inputset.prev_kpoints = KPoints(kpts=[(1,1,8)])
+            inputset.prev_kpoints = Kpoints(kpts=[(1,1,8)])
             inputset.write_input(relax2_dir)
             print(f"Created new fine-relax VASP input at {relax2_dir}")
             with chdir(relax2_dir):
@@ -273,7 +273,7 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
             },
         )
     # Force coarse Kpoints initially
-    vaspinput.prev_kpoints = KPoints(kpts=[(1,1,2)])
+    vaspinput.prev_kpoints = Kpoints(kpts=[(1,1,2)])
 
     while True:
         generation = da.get_generation_number()
