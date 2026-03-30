@@ -122,6 +122,8 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 directory=str(relax_dir),
                 # Fine-relax with accurate forces and IBRION=1
                 user_incar_settings={
+                    # We do not care about stresses
+                    "ISIF": 0,
                     'EDIFFG': -0.01,
                     'IBRION': 1
                 },
