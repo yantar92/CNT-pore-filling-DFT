@@ -122,7 +122,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 directory=str(relax_dir),
                 # Fine-relax with accurate forces and IBRION=1
                 user_incar_settings={
-                    'EFIFFG': -0.01,
+                    'EDIFFG': -0.01,
                     'IBRION': 1
                 },
             )
