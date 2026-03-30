@@ -127,7 +127,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 },
             )
             # Fine kpoint grid
-            inputset.prev_kpoints = Kpoints(kpts=[(1,1,8)])
+            inputset.prev_kpoints = Kpoints(kpts=[(1, 1, 14)])
             inputset.write_input(relax2_dir)
             print(f"Created new fine-relax VASP input at {relax2_dir}")
             with chdir(relax2_dir):
