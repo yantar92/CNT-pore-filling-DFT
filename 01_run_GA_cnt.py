@@ -64,7 +64,7 @@ def relax_all_unrelaxed(da, vaspinput, directory):
         relax_dir = Path(path) / "relax"
         relax2_dir = Path(path) / "relax.2"
         # !! We do not use SCF here, but instead limit reuse relax2
-        scf_dir = Path(path) / "relax.SCF"
+        # scf_dir = Path(path) / "relax.SCF"
 
         if not relax_dir.is_dir():
             relax_dir.mkdir(parents=True)
@@ -125,7 +125,9 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                     # We do not care about stresses
                     "ISIF": 0,
                     'EDIFFG': -0.01,
-                    'IBRION': 1
+                    # IBRION =1 makes the system oscilate
+                    'IBRION': 2,
+                    'POTIM': 0.2,
                 },
             )
             # Fine kpoint grid
