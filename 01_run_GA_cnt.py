@@ -42,6 +42,7 @@ import argparse
 import shutil
 
 GORUN_ARGS = argparse.Namespace(mark=True)
+BEST_ENERGY = 1E100
 
 def relax_all_unrelaxed(da, vaspinput, directory):
     """Relax all unrelaxed structures in DA using VASPINPUT reference.
@@ -100,7 +101,9 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 return False
             assert tem is not None
             energy = tem.get_potential_energy()
-
+            global BEST_ENERGY
+            if energy < BEST_ENERGY:
+                BEST_ENERGY = energy
             tem_forces = tem.get_forces()
             new_positions = np.zeros_like(atoms.positions)
             new_forces = np.zeros_like(tem_forces)
@@ -280,10 +283,12 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
     # Force coarse Kpoints initially
     vaspinput.prev_kpoints = Kpoints(kpts=[(1, 1, 2)])
 
+    PREV_ENERGY = BEST_ENERGY
+    energy_improved = False
     while True:
         generation = da.get_generation_number()
-        if max_generations and generation > max_generations:
-            print(f"Reached maximum number of generations")
+        if max_generations and generation > max_generations and (not energy_improved):
+            print("Reached maximum number of generations")
             sys.exit(0)
         print(f"Generation {generation}")
         status = relax_all_unrelaxed(da, vaspinput, f"{n_to_optimize}_Na")
@@ -292,6 +297,13 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
         elif status == 'running':
             time.sleep(600)
         elif status == 'converged':
+            # Assume improvements below 1meV as converged
+            if BEST_ENERGY + 0.001 < PREV_ENERGY:
+                print(f"Energy improved from {PREV_ENERGY} to {BEST_ENERGY}")
+                PREV_ENERGY = BEST_ENERGY
+                energy_improved = True
+            else:
+                energy_improved = False
             produce_new_generation(da, mutation_probability)
         else:
             print('This should not happen')
