@@ -280,11 +280,11 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
     vaspinput.prev_kpoints = Kpoints(kpts=[(1, 1, 2)])
 
     BEST_ENERGY = 1E100
-    last_generation = da.get_generation_number()
+    prev_generation = min(0, da.get_generation_number() - 1)
     for atom in da.get_all_relaxed_candidates():
         energy = -atom.info['key_value_pairs']['raw_score']
         generation = atom.info['key_value_pairs'].get('generation', 0)
-        if energy < BEST_ENERGY and (not generation == last_generation):
+        if energy < BEST_ENERGY and (not generation == prev_generation):
             BEST_ENERGY = energy
     energy_improved = False
     while True:
