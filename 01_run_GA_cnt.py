@@ -309,6 +309,8 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
                     BEST_ENERGY = energy
             if energy_improved:
                 print(f"Energy improved from {PREV_ENERGY} to {BEST_ENERGY}")
+            else:
+                print(f"Energy NOT improved: old={PREV_ENERGY} new={BEST_ENERGY}")
             produce_new_generation(da, mutation_probability)
         else:
             print('This should not happen')
