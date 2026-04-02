@@ -54,7 +54,7 @@ min_energies = df.groupby('Formula')['Formation Energy (meV/atom)'].transform('m
 final_result = df[df['Formation Energy (meV/atom)'] <= (min_energies + ENERGY_THRESHOLD)].copy()
 
 known_structures = []
-for p in final_result['ID']:
+for p in sorted(final_result['ID']):
     if 'gen' not in p:
         continue
     print(p)
