@@ -59,6 +59,7 @@ for p in final_result['ID']:
         continue
     print(p)
     inputset = IMDDerivedInputSet(directory=p)
+    print("Read VASP output")
     if not structure_matches(inputset.structure, known_structures, multithread=True):
         known_structures.append(inputset.structure.copy())
         for site in inputset.structure:
