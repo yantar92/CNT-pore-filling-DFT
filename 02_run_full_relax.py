@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 from IMDgroup.pymatgen.io.vasp.sets import IMDDerivedInputSet
 
-ENERGY_THRESHOLD = 3  # meV/atom
+ENERGY_THRESHOLD = 1  # meV/atom
 
 INCAR_PY = """
 import numpy as np
