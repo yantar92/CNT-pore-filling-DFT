@@ -62,7 +62,7 @@ print(f"{opt_z} {energies[-1]}")
 """
 
 
-def main(n, m, length, vacuum=20, defect=None, encut=500, density="6000", functional="pbe"):
+def main(n, m, length, vacuum=20, defect=None, encut=500, density="6000", functional="pbe", ibrion=2):
     """Build VASP input for CNT and run VASP.
     CNT has n,m chirality, length, and adds vacuum space around.
     """
@@ -94,6 +94,7 @@ def main(n, m, length, vacuum=20, defect=None, encut=500, density="6000", functi
         functional=functional,
         structure=cnt_struct,
         user_incar_settings={
+            'IBRION': ibrion,
             'ENCUT': encut,
             'ALGO': 'Normal' if functional == 'pbe' else 'All',
             'ISIF': Incar.ISIF_RELAX_POS,
@@ -121,6 +122,7 @@ if __name__ == "__main__":
     parser.add_argument("--defect", type=str, default=None, help="Defect to introduce (MV, DV, SW)")
     parser.add_argument("--functional", type=str, default="pbe", help="Functional to use")
     parser.add_argument("--encut", type=float, default=500, help="ENCUT (default: 500eV)")
+    parser.add_argument("--ibrion", type=int, default=2, help="IBRION (default: 2)")
     parser.add_argument("--kpoints", type=str, default="6000", help="Kpoint density (default: 6000) or gamm grid like 1, 1, 2")
     args = parser.parse_args()
-    main(args.n, args.m, args.length, args.vacuum, args.defect, args.encut, args.kpoints, args.functional)
+    main(args.n, args.m, args.length, args.vacuum, args.defect, args.encut, args.kpoints, args.functional, args.ibrion)
