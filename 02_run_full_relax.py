@@ -63,7 +63,10 @@ for p in final_result['ID']:
         known_structures.append(inputset.structure.copy())
         for site in inputset.structure:
             del site.properties['selective_dynamics']
-        inputset.write_input(Path(p).parent / "relax.final")
-        print(f'Wrote to {Path(p).parent / "relax.final"}')
+        target_dir = Path(p).parent / "relax.final"
+        inputset.write_input(target_dir)
+        with open(target_dir / "INCAR.py", "w") as f:
+            f.write(INCAR_PY)
+        print(f'Wrote to {target_dir}')
     else:
         print('Skipping known structure')
