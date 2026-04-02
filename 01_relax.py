@@ -97,8 +97,7 @@ def main(n, m, length, vacuum=20, defect=None, encut=500, density="6000", functi
             'IBRION': ibrion,
             'ENCUT': encut,
             'ALGO': 'Normal' if functional == 'pbe' else 'All',
-            'ISIF': Incar.ISIF_RELAX_POS,
-            'IBRION': Incar.IBRION_IONIC_RELAX_CGA},
+            'ISIF': Incar.ISIF_RELAX_POS},
         user_kpoints_settings=kpoints_settings,
     )
 
