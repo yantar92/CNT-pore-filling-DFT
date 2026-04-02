@@ -7,7 +7,7 @@ import pandas as pd
 from IMDgroup.pymatgen.io.vasp.sets import IMDDerivedInputSet
 from IMDgroup.pymatgen.core.structure import structure_matches
 
-ENERGY_THRESHOLD = 1  # meV/atom
+ENERGY_THRESHOLD = 10  # meV/atom
 
 INCAR_PY = """
 import numpy as np
