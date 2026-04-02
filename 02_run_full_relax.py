@@ -5,6 +5,7 @@ relax CNTs with lowest energies and +XmeV above.
 from pathlib import Path
 import pandas as pd
 from IMDgroup.pymatgen.io.vasp.sets import IMDDerivedInputSet
+from IMDgroup.pymatgen.core.structure import structure_matches
 
 ENERGY_THRESHOLD = 1  # meV/atom
 
@@ -52,11 +53,17 @@ df = pd.read_csv('formation_en.txt', sep=' ')
 min_energies = df.groupby('Formula')['Formation Energy (meV/atom)'].transform('min')
 final_result = df[df['Formation Energy (meV/atom)'] <= (min_energies + ENERGY_THRESHOLD)].copy()
 
+known_structures = []
 for p in final_result['ID']:
     if 'gen' not in p:
         continue
     print(p)
     inputset = IMDDerivedInputSet(directory=p)
-    for site in inputset.structure:
-        del site.properties['selective_dynamics']
-    inputset.write_input(Path(p).parent / "relax.final")
+    if not structure_matches(inputset.structure, known_structures, multithread=True):
+        known_structures.append(inputset.structure.copy())
+        for site in inputset.structure:
+            del site.properties['selective_dynamics']
+        inputset.write_input(Path(p).parent / "relax.final")
+        print(f'Wrote to {Path(p).parent / "relax.final"}')
+    else:
+        print('Skipping known structure')
