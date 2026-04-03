@@ -58,13 +58,16 @@ for p in sorted(final_result['ID']):
     if 'gen' not in p:
         continue
     print(p)
+    target_dir = Path(p).parent / "relax.final"
     inputset = IMDDerivedInputSet(directory=p)
     print("Read VASP output")
     if not structure_matches(inputset.structure, known_structures, multithread=True):
         known_structures.append(inputset.structure.copy())
+        if target_dir.is_dir():
+            print(f"Already present {target_dir}. Skipping")
+            continue
         for site in inputset.structure:
             del site.properties['selective_dynamics']
-        target_dir = Path(p).parent / "relax.final"
         inputset.write_input(target_dir)
         with open(target_dir / "INCAR.py", "w") as f:
             f.write(INCAR_PY)
