@@ -62,7 +62,9 @@ for p in sorted(final_result['ID']):
         continue
     print(p)
     target_dir = Path(p).parent / "relax.final.optB88-vdW"
-    inputset = IMDDerivedInputSet(directory=p, functional='optB88-vdW')
+    inputset = IMDDerivedInputSet(
+        directory=p, functional='optB88-vdW',
+        user_incar_settings={'PREC': 'Accurate', 'NELM': 200})
     print("Read VASP output")
     if not structure_matches(inputset.structure, known_structures, multithread=True):
         known_structures.append(inputset.structure.copy())
