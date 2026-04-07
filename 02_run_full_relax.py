@@ -57,8 +57,8 @@ known_structures = []
 for p in sorted(final_result['ID']):
     if 'gen' not in p:
         continue
-    if (Path(p).parent / "FULL_RELAX_GENERATED").is_file():
-        print(f"Skipping because of {(Path(p).parent / 'FULL_RELAX_GENERATED')}")
+    if (Path(p).parent.parent / "FULL_RELAX_GENERATED").is_file():
+        print(f"Skipping because of {(Path(p).parent.parent / 'FULL_RELAX_GENERATED')}")
         continue
     print(p)
     target_dir = Path(p).parent / "relax.final"
