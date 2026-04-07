@@ -60,6 +60,9 @@ known_structures = []
 for p in sorted(final_result['ID']):
     if 'gen' not in p:
         continue
+    if (p / "FULL_RELAX_GENERATED").is_file():
+        print(f"Skipping because of {(p / 'FULL_RELAX_GENERATED')}")
+        continue
     print(p)
     target_dir = Path(p).parent / "relax.final.optB88-vdW"
     inputset = IMDDerivedInputSet(
