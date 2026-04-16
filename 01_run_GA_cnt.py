@@ -122,11 +122,14 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 # Fine-relax with accurate forces and IBRION=1
                 user_incar_settings={
                     # We do not care about stresses
+                    "ALGO": "Normal",
                     "ISIF": 0,
                     'EDIFFG': -0.01,
                     # IBRION =1 makes the system oscilate
-                    'IBRION': 2,
-                    'POTIM': 0.2,
+                    # Update: not always
+                    'IBRION': 1,
+                    'POTIM': 0.5,
+                    'NELM': 200,
                 },
             )
             # Fine kpoint grid
