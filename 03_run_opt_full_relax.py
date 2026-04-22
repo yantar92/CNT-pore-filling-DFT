@@ -68,7 +68,7 @@ print(f"Going to generate {len(final_result)} structures")
 known_structures = []
 for p in sorted(final_result['ID']):
     p = Path(p)
-    if 'gen' not in p:
+    if 'gen' not in str(p):
         continue
     print(p)
     vaspdir = IMDGVaspDir(p)
