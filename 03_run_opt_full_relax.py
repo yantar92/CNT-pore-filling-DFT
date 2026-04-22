@@ -9,7 +9,7 @@ from IMDgroup.pymatgen.core.structure import structure_matches
 import pandas as pd
 
 
-ENERGY_THRESHOLD = 3  # meV/atom
+ENERGY_THRESHOLD = 2  # meV/atom
 
 INCAR_PY = """
 import sys
