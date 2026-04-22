@@ -9,11 +9,12 @@ import pandas as pd
 from IMDgroup.pymatgen.io.vasp.sets import IMDDerivedInputSet
 from IMDgroup.pymatgen.core.structure import structure_matches
 
-ENERGY_THRESHOLD = 5  # meV/atom
+ENERGY_THRESHOLD = 2  # meV/atom
 
 df = pd.read_csv('formation_en.txt', sep=' ')
 min_energies = df.groupby('Formula')['Formation Energy (meV/atom)'].transform('min')
-final_result = df[df['Formation Energy (meV/atom)'] <= (min_energies + ENERGY_THRESHOLD)].copy()
+# final_result = df[df['Formation Energy (meV/atom)'] <= (min_energies + ENERGY_THRESHOLD)].copy()
+final_result = df[df['Energy above hull (meV/atom)'] <= ENERGY_THRESHOLD].copy()
 
 known_structures = []
 for p in sorted(final_result['ID']):
@@ -27,9 +28,8 @@ for p in sorted(final_result['ID']):
     inputset = IMDDerivedInputSet(
         directory=p, functional='optB88-vdW',
         user_incar_settings={
-            'ALGO': 'Normal',
+            'ALGO': 'All',
             'IBRION': 1,
-            'POTIM': 0.5,
             'PREC': 'Accurate',
             'NELM': 200,
             'NELMIN': 6})
