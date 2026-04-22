@@ -5,6 +5,11 @@ relax CNT lengths.
 from pathlib import Path
 from IMDgroup.pymatgen.io.vasp.sets import IMDDerivedInputSet
 from IMDgroup.pymatgen.io.vasp.vaspdir import IMDGVaspDir
+from IMDgroup.pymatgen.core.structure import structure_matches
+import pandas as pd
+
+
+ENERGY_THRESHOLD = 3  # meV/atom
 
 INCAR_PY = """
 import sys
@@ -55,20 +60,31 @@ for f, energy in zip(z_factors, energies):
 print(f"{opt_z} {energies[-1]}")
 """
 
-vaspdirs = IMDGVaspDir.read_vaspdirs(
-    '.', path_filter=lambda d: d.name == 'relax.2.optB88-vdW')
-for p in vaspdirs:
+df = pd.read_csv('formation_en_opt_norelax.txt', sep=' ')
+min_energies = df.groupby('Formula')['Formation Energy (meV/atom)'].transform('min')
+final_result = df[df['Formation Energy (meV/atom)'] <= (min_energies + ENERGY_THRESHOLD)].copy()
+print(f"Going to generate {len(final_result)} structures")
+
+known_structures = []
+for p in sorted(final_result['ID']):
+    p = Path(p)
+    if 'gen' not in p:
+        continue
     print(p)
-    vaspdir = vaspdirs[p]
+    vaspdir = IMDGVaspDir(p)
     if not vaspdir.converged:
         print(f"Skipping unconverged dir {p}")
         continue
     target_dir = Path(p).parent / "relax.final.optB88-vdW"
-    if target_dir.is_dir():
-        print(f"Already present {target_dir}. Skipping")
-        continue
     inputset = IMDDerivedInputSet(directory=vaspdir)
-    inputset.write_input(target_dir)
-    with open(target_dir / "INCAR.py", "w") as f:
-        f.write(INCAR_PY)
-    print(f'Wrote to {target_dir}')
+    if not structure_matches(inputset.structure, known_structures, multithread=True):
+        known_structures.append(inputset.structure.copy())
+        if target_dir.is_dir():
+            print(f"Already present {target_dir}. Skipping")
+            continue
+        inputset.write_input(target_dir)
+        with open(target_dir / "INCAR.py", "w") as f:
+            f.write(INCAR_PY)
+        print(f'Wrote to {target_dir}')
+    else:
+        print('Skipping known structure')
