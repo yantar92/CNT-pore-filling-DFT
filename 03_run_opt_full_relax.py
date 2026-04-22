@@ -9,7 +9,7 @@ from IMDgroup.pymatgen.core.structure import structure_matches
 import pandas as pd
 
 
-ENERGY_THRESHOLD = 1  # meV/atom
+ENERGY_THRESHOLD = 5  # meV/atom
 
 INCAR_PY = """
 import sys
@@ -62,7 +62,8 @@ print(f"{opt_z} {energies[-1]}")
 
 df = pd.read_csv('formation_en_opt_norelax.txt', sep=' ')
 min_energies = df.groupby('Formula')['Formation Energy (meV/atom)'].transform('min')
-final_result = df[df['Formation Energy (meV/atom)'] <= (min_energies + ENERGY_THRESHOLD)].copy()
+# final_result = df[df['Formation Energy (meV/atom)'] <= (min_energies + ENERGY_THRESHOLD)].copy()
+final_result = df[df['Energy above hull (meV/atom)'] <= ENERGY_THRESHOLD].copy()
 print(f"Going to generate {len(final_result)} structures")
 
 known_structures = []
