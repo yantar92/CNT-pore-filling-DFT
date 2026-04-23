@@ -77,7 +77,14 @@ for p in sorted(final_result['ID']):
         print(f"Skipping unconverged dir {p}")
         continue
     target_dir = Path(p).parent / "relax.final.optB88-vdW"
-    inputset = IMDDerivedInputSet(directory=vaspdir)
+    inputset = IMDDerivedInputSet(
+        directory=vaspdir,
+        user_incar_settings={
+            'ALGO: All',
+            'IBRION: 1',
+            'NELM': 200,
+            'EDIFFG': -0.02,
+        })
     if not structure_matches(inputset.structure, known_structures, multithread=True):
         known_structures.append(inputset.structure.copy())
         if target_dir.is_dir():
