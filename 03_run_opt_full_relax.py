@@ -80,8 +80,8 @@ for p in sorted(final_result['ID']):
     inputset = IMDDerivedInputSet(
         directory=vaspdir,
         user_incar_settings={
-            'ALGO: All',
-            'IBRION: 1',
+            'ALGO': 'All',
+            'IBRION': 1,
             'NELM': 200,
             'EDIFFG': -0.02,
         })
