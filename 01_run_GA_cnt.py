@@ -122,18 +122,20 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 # Fine-relax with accurate forces and IBRION=1
                 user_incar_settings={
                     # We do not care about stresses
-                    "ALGO": "Normal",
+                    "ALGO": "All",
                     "ISIF": 0,
-                    'EDIFFG': -0.01,
+                    'EDIFFG': -0.02,
                     # IBRION =1 makes the system oscilate
                     # Update: not always
                     'IBRION': 1,
-                    'POTIM': 0.5,
                     'NELM': 200,
                 },
             )
             # Fine kpoint grid
             inputset.prev_kpoints = Kpoints(kpts=[(1, 1, 8)])
+            # not fixing carbon is more reliable and faster
+            for site in inputset.structure:
+                del site.properties['selective_dynamics']
             inputset.write_input(relax2_dir)
             print(f"Created new fine-relax VASP input at {relax2_dir}")
             with chdir(relax2_dir):
