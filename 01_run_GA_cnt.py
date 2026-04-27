@@ -129,6 +129,8 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                     # Update: not always
                     'IBRION': 1,
                     'NELM': 200,
+                    # This is important to keep consistent across runs
+                    'PREC': 'Accurate',
                 },
             )
             # Fine kpoint grid
@@ -279,6 +281,8 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
             "ISIF": 0,
             'IBRION': 2,
             'EDIFFG': -0.1,
+            # This is important to keep consistent across runs
+            'PREC': 'Accurate',
             },
         )
     # Force coarse Kpoints initially
