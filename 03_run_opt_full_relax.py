@@ -60,7 +60,7 @@ for f, energy in zip(z_factors, energies):
 print(f"{opt_z} {energies[-1]}")
 """
 
-df = pd.read_csv('formation_en_opt_norelax.txt', sep=' ')
+df = pd.read_csv('formation_en_opt_relax.txt', sep=' ')
 min_energies = df.groupby('Formula')['Formation Energy (meV/atom)'].transform('min')
 # final_result = df[df['Formation Energy (meV/atom)'] <= (min_energies + ENERGY_THRESHOLD)].copy()
 final_result = df[df['Energy above hull (meV/atom)'] <= ENERGY_THRESHOLD].copy()
