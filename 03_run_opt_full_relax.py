@@ -22,25 +22,44 @@ from IMDgroup.pymatgen.io.vasp.vaspdir import IMDGVaspDir
 SCAN_THRESHOLD = 0.04 # scan threshold
 
 # 1. Create your configurations (looping over z-lengths)
-# Assume 'atoms' is your starting structure
-z_original = atoms.cell[2, 2]
+if Path('gorun_1/POSCAR').is_file():
+    vdir = IMDGVaspDir('gorun_1')
+    z_original = vdir['POSCAR'].structure.lattice.c
+else:
+    # Assume 'atoms' is your starting structure
+    z_original = atoms.cell[2, 2]
 # !! 5 POINTS!
 z_factors = np.linspace(1 - SCAN_THRESHOLD, 1 + SCAN_THRESHOLD, 5)
 energies = []
 volumes = []
 
+vdirs = []
+for d in Path(".").glob("gorun_*"):
+    if d.is_dir():
+        vdir = IMDGVaspDir(d)
+        if vdir.converged_electronic and vdir.converged_ionic:
+            vdirs.append(vdir)
+
 for f in z_factors:
     atoms.cell[2, 2] = z_original * f
     # Important: scale_atoms=True moves atoms proportionally in z
     atoms.set_cell(atoms.cell, scale_atoms=True)
-    energies.append(atoms.get_potential_energy())
-    volumes.append(atoms.get_volume())
+    found_existing = False
+    for vdir in vdirs:
+        if np.isclose(vdir.structure.lattice.c, atoms.cell[2, 2]):
+            energies.append(vdir.final_energy)
+            volumes.append(vdir.structure.volume)
+            found_existing = True
+            break
+    if not found_existing:
+        energies.append(atoms.get_potential_energy())
+        volumes.append(atoms.get_volume())
+        d = IMDGVaspDir('.')
+        if not (d.converged_electronic and d.converged_ionic):
+             print('VASP not converged. Aborting')
+             sys.exit(1)
     for f, energy in zip(z_factors, energies):
         print(f"{z_original * f} {energy}")
-    d = IMDGVaspDir('.')
-    if not (d.converged_electronic and d.converged_ionic):
-         print('VASP not converged. Aborting')
-         sys.exit(1)
 
 # 2. Fit the data
 # Even though we varied Z, we fit Energy vs. Volume
