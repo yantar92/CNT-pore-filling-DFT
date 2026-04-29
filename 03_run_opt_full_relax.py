@@ -13,6 +13,7 @@ ENERGY_THRESHOLD = 2  # meV/atom
 
 INCAR_PY = """
 import sys
+from pathlib import Path
 import numpy as np
 from ase.eos import EquationOfState
 from ase.io import read
