@@ -48,6 +48,21 @@ def radius_atom_list(struc):
     return np.array(((pos_struc[:, 0]**2) + (pos_struc[:, 1]**2))**(1/2))
 
 
+def atoms_inside_cnt(atoms, species, radius_cnt):
+    """Return True when every ``species`` atom lies inside the CNT wall.
+
+    Buildcell occasionally places the inserted alkali atoms in the vacuum
+    outside the CNT. The wall radius ``radius_cnt`` is the largest radial
+    distance of the fixed carbon atoms from the central z-axis, so any
+    ``species`` atom farther than that is treated as outside the CNT.
+    """
+    radii = radius_atom_list(atoms)
+    for atom, radius in zip(atoms, radii):
+        if atom.symbol == species and radius > radius_cnt:
+            return False
+    return True
+
+
 def make_db_GA(cnt_dir, number, size_seeds, vacuum=15, species="Na"):
     if species not in SPECIES:
         raise ValueError(f"Unsupported species: {species}. Supported: {sorted(SPECIES)}")
@@ -111,16 +126,26 @@ def make_db_GA(cnt_dir, number, size_seeds, vacuum=15, species="Na"):
     bc = Buildcell(seed)
 
     starting_population = []
-    for _ in range(size_seeds):
+    max_attempts = size_seeds * 100
+    attempts = 0
+    while len(starting_population) < size_seeds and attempts < max_attempts:
+        attempts += 1
         atoms = bc.generate(timeout=100)
         # FIXME: Why??
         atoms.set_pbc(True)
+        if not atoms_inside_cnt(atoms, species, radius_cnt):
+            print(f"Skipping structure with {species} outside CNT; regenerating.")
+            continue
         print(atoms)
         # 2026-03-23: Allowing Carbon relaxation.
         # mask_atoms = [f == 'C' for f in atoms.get_chemical_symbols()]
         # # We will not allow carbons to move during relaxation later.
         # atoms.set_constraint(FixAtoms(mask=mask_atoms))
         starting_population.append(atoms)
+    if len(starting_population) < size_seeds:
+        raise RuntimeError(
+            f"Could not generate {size_seeds} structures with {species} inside "
+            f"the CNT after {max_attempts} attempts.")
 
     if os.path.isfile(db_file):
         warnings.warn(f"Overwriting db file: {db_file}")
