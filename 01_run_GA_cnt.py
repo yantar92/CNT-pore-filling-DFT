@@ -35,6 +35,7 @@ from pymatgen.io.vasp.inputs import Kpoints
 import subprocess
 import time
 from ase.io import read
+from ase.data import chemical_symbols
 import sys
 from ase.calculators.singlepoint import SinglePointCalculator
 from IMDgroup.pymatgen.io.vasp.vaspdir import IMDGVaspDir
@@ -268,6 +269,8 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
     # Get atomic number of specie to optimize
     atom_numbers_to_optimize = da.get_atom_numbers_to_optimize()
     n_to_optimize = len(atom_numbers_to_optimize)
+    # Infer the alkali element from the DB stoichiometry (11 -> Na, 3 -> Li)
+    element = chemical_symbols[atom_numbers_to_optimize[0]]
 
     def exit_restoring_db():
         shutil.copyfile(db_file + '.bak', db_file)
@@ -302,7 +305,7 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
             print("Reached maximum number of generations")
             sys.exit(0)
         print(f"Generation {generation}")
-        status = relax_all_unrelaxed(da, vaspinput, f"{n_to_optimize}_Na")
+        status = relax_all_unrelaxed(da, vaspinput, f"{n_to_optimize}_{element}")
         if status == 'unconverged':
             exit_restoring_db()
         elif status == 'running':

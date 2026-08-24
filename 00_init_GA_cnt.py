@@ -2,7 +2,7 @@
 """
 Created on Wed Feb  4 09:08:20 2026
 
-Generate initial set of randomized inputs for CNT filled with Na.
+Generate initial set of randomized inputs for CNT filled with Na or Li.
 Use AIRSS.
 
 @author: thefo
@@ -21,6 +21,24 @@ from ase import Atoms
 from pymatgen.io.ase import AseAtomsAdaptor
 
 
+# Element-specific parameters for the inserted alkali metal.
+# self_minsep is a lower bound on the X-X distance used by buildcell.
+# The Na value is the DFT-derived triangular-lattice parameter from the
+# pore-filling model; adjust Li to match your own DFT reference.
+SPECIES = {
+    "Na": {
+        "atomic_number": 11,
+        "self_minsep": 3.59346,
+        "carbon_minsep": 2.0,
+    },
+    "Li": {
+        "atomic_number": 3,
+        "self_minsep": 2.95,  # from optB88
+        "carbon_minsep": 1.7,  # From Gabriel's data for dimer
+    },
+}
+
+
 def radius_atom_list(struc):
     """Return a list of distances of atoms from central z axis.
     """
@@ -30,8 +48,11 @@ def radius_atom_list(struc):
     return np.array(((pos_struc[:, 0]**2) + (pos_struc[:, 1]**2))**(1/2))
 
 
-def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
-    db_file = 'GA_' + str(number_Na) + '_Na_CNT.db'
+def make_db_GA(cnt_dir, number, size_seeds, vacuum=15, species="Na"):
+    if species not in SPECIES:
+        raise ValueError(f"Unsupported species: {species}. Supported: {sorted(SPECIES)}")
+    conf = SPECIES[species]
+    db_file = f'GA_{number}_{species}_CNT.db'
     vaspdir = IMDGVaspDir(cnt_dir)
     assert vaspdir.converged
     cnt = AseAtomsAdaptor.get_atoms(vaspdir.structure)
@@ -50,15 +71,22 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
     # Compute radius to limit AIRSS distortions
     radius_cnt = max(radius_atom_list(cnt))
 
-    # Add Na at 0,0,0 to be randomized by AIRSS
+    # Add a single alkali atom at 0,0,0 to be randomized by AIRSS
     cnt_origin = cnt.copy()
-    cnt.extend(Atoms('Na'))
+    cnt.extend(Atoms(species))
     seed = SeedAtoms(cnt)
     seed.gentags.supercell = '1 1 1'
     # Allow slightly smaller atom-atom distances
     seed.gentags.slack = 0.1
     # Minimum distances between atoms
-    seed.gentags.minsep = [5.0, {'C-C': 1.4, 'Na-Na': 3.59346, 'C-Na': 2}]
+    seed.gentags.minsep = [
+        5.0,
+        {
+            'C-C': 1.4,
+            f'{species}-{species}': conf['self_minsep'],
+            f'C-{species}': conf['carbon_minsep'],
+        },
+    ]
     seed.gentags.fix = True
     # seed.gentags.cylinder = radius = (tube.cell[1, 1] - 2 * vacuum)/2
     for atom in seed:
@@ -67,17 +95,17 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
             atom.fix = True
             atom.posamp = 0
         else:
-            # All Na can randomly move up to radius_cnt in x/y direction
-            # z - any
+            # All inserted atoms can randomly move up to radius_cnt in x/y
+            # direction; z is unrestricted.
             # atom.fix = False
             atom.zamp = -1
             atom.xamp = radius_cnt
             atom.yamp = radius_cnt
             # only matters for supercell, but keep for safety - from examples
             atom.adatom = True
-            # Add number_Na Na atoms during randomization
-            atom.num = number_Na
-            # Na to be placed in the middle of the CNT and randomized from there
+            # Add `number` alkali atoms during randomization
+            atom.num = number
+            # Alkali atom to be placed in the middle of the CNT and randomized from there
             atom.position = [seed.cell[0, 0]/2, seed.cell[1, 1]/ 2, 0]
     print('\n'.join(seed.get_cell_inp_lines()))
     bc = Buildcell(seed)
@@ -99,7 +127,7 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
         os.remove(db_file)
 
     # create the database to store information in
-    atom_numbers = number_Na * [11]  # 11 is atomic number of Na
+    atom_numbers = number * [conf['atomic_number']]
     d = PrepareDB(
         db_file_name=db_file, simulation_cell=cnt_origin, stoichiometry=atom_numbers,
         population_size=len(starting_population),
@@ -111,15 +139,19 @@ def make_db_GA(cnt_dir, number_Na, size_seeds, vacuum=15):
 
 
 def main(args):
-    make_db_GA(args.cnt, args.number_Na, args.size_seeds, args.vacuum)
-    # number_Na = 12
-    # size_seeds = 20
+    make_db_GA(args.cnt, args.number, args.size_seeds, args.vacuum, args.species)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Script to add Na into optimized CNT")
+    parser = argparse.ArgumentParser(
+        description="Script to add an alkali metal (Na or Li) into optimized CNT")
     parser.add_argument("--cnt", type=str, required=True, help="Path to directory with relaxed CNT")
-    parser.add_argument("--number_Na", type=int, required=True, help="Number of Na")
+    parser.add_argument(
+        "--number", "--number_Na", dest="number", type=int, required=True,
+        help="Number of alkali atoms to insert")
+    parser.add_argument(
+        "--species", type=str, default="Na", choices=sorted(SPECIES),
+        help="Alkali metal to insert")
     parser.add_argument("--size_seeds", type=int, default=20, help="Number of seeds")
     parser.add_argument("--vacuum", type=float, default=15.0, help="Vacuum to surround CNT with")
 
