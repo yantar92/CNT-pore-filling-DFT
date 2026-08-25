@@ -126,7 +126,7 @@ def make_db_GA(cnt_dir, number, size_seeds, vacuum=15, species="Na"):
     bc = Buildcell(seed)
 
     starting_population = []
-    max_attempts = size_seeds * 100
+    max_attempts = size_seeds * 2
     attempts = 0
     while len(starting_population) < size_seeds and attempts < max_attempts:
         attempts += 1
