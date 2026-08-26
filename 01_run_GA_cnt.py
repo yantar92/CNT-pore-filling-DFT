@@ -280,8 +280,8 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
     vaspinput = IMDDerivedInputSet(
         directory=reference_vasp,
         user_incar_settings={
-            "ALGO": 'Normal',
-            "NELM": 120,
+            "ALGO": 'All',
+            "NELM": 200,
             # We do not care about stresses
             "ISIF": 0,
             'IBRION': 2,
