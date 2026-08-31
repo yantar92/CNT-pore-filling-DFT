@@ -70,14 +70,17 @@ def relax_all_unrelaxed(da, vaspinput, directory):
         if not relax_dir.is_dir():
             relax_dir.mkdir(parents=True)
             vaspinput.structure = AseAtomsAdaptor.get_structure(atoms)
+            # UPDATE: constraining carbon appears to
+            # leave system too far from equilibrium.
+
             # Fix carbon atoms (for speed)
             # See previous discussion on slow convergence
-            for site in vaspinput.structure:
-                if site.specie.name == 'C':
-                    value = [False, False, False]
-                else:
-                    value = [True, True, True]
-                site.properties['selective_dynamics'] = value
+            # for site in vaspinput.structure:
+            #     if site.specie.name == 'C':
+            #         value = [False, False, False]
+            #     else:
+            #         value = [True, True, True]
+            #     site.properties['selective_dynamics'] = value
             vaspinput.write_input(output_dir=relax_dir)
             print(f"Created new relax VASP input at {relax_dir}")
             with chdir(relax_dir):
