@@ -281,7 +281,7 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
         directory=reference_vasp,
         user_incar_settings={
             "ALGO": 'All',
-            "NELM": 200,
+            "NELM": 400,
             # We do not care about stresses
             "ISIF": 0,
             'IBRION': 2,
