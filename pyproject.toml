@@ -4,4 +4,4 @@ version = "0.1.0"
 description = "Search ground states of CNT filled with Na"
 readme = "README.org"
 requires-python = ">=3.13"
-dependencies = ['ase', 'pymatgen', 'IMDgroup-pymatgen']
+dependencies = ['ase', 'pymatgen', 'IMDgroup-pymatgen', 'IMDgroup-gorun']

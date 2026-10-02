@@ -1,29 +1,109 @@
-#+TITLE: Ground state search code for Na insertion into CNT
+#+TITLE: Ground state search for Na/Li insertion into carbon nanotubes
 #+AUTHOR: Andres Usuga, Ihor Radchenko
 
-This code searches for ground state structures in carbon nanotubes
-filled with various concentrations of Na.
+* Purpose
 
-This task is tricky as checking all possible Na configurations inside the CNT
-is not viable - there are too many. So, we need to take shortcuts.
+This code searches for ground state structures in carbon nanotubes (CNTs)
+filled with various concentrations of Na or Li. The CNT is a model for a
+closed pore in a hard-carbon anode; the resulting structures feed the
+pore-filling voltage and kinetics model in the accompanying manuscript on Na
+storage in hard carbon.
 
-What we do:
-1. Use AIRSS [[https://www.mtg.msm.cam.ac.uk/Codes/AIRSS]] to generate
-   random trial structures for Na inside CNT. We use
-   https://github.com/zhubonan/airsspy for python bindings to AIRSS.
-2. Use [[https://dtu-energy.github.io/ase-ga/]] to search true ground states
-   efficiently, without having to sample the whole configuration space
-3. Use VASP to relax structures and obtain the energies.
+Checking all possible Na/Li configurations inside the CNT is not viable -
+there are too many. So, we need to take shortcuts. Three tools are chained
+together:
 
-The code in this repository is a glue that automates structure search for any
-given CNT matrix.
+1. AIRSS [[https://www.mtg.msm.cam.ac.uk/Codes/AIRSS]] generates random trial
+   structures for Na/Li inside the CNT. We use the airsspy Python bindings
+   (https://github.com/zhubonan/airsspy) to drive =buildcell=.
+2. ase-ga [[https://dtu-energy.github.io/ase-ga/]] searches for true ground
+   states efficiently, without having to sample the whole configuration
+   space.
+3. VASP relaxes the structures and returns their energies.
 
-Keep in mind that CNT length may put constraints onto Na inside.
-Na tends to form BCC-like lattice inside CNT with relatively large
-radii, and that lattice may be constrained by boundary conditions.
-If the BCC lattice parameter does not align well with nanotube supercell,
-we may induce artificial strains, affecting Na energetics.
-In theory (one needs to check), a poorly chosen CNT length may even affect
-the ground state structures found by the code.
+The code in this repository is glue that automates this structure search for
+any given CNT chirality and metal concentration.
 
+* Workflow
 
+The search is staged. A fast PBE pass locates candidate low-energy structures;
+a van der Waals-corrected optB88-vdW pass re-relaxes the best ones. The
+two-functional split mirrors the manuscript: optB88-vdW is needed to capture
+the Na-C interaction, which PBE underbinds.
+
+The scripts run in roughly this order:
+
+1. =01_relax.py= -- build a pristine (or defected) CNT and relax the empty
+   tube in VASP, including an equation-of-state scan over the tube length.
+
+2. =00_init_GA_cnt.py= -- read the relaxed CNT and generate random trial
+   structures with Na/Li inside, using AIRSS =buildcell=. The trials are
+   stored in an ase-ga database (=GA_<number>_<species>_CNT.db=).
+
+3. =01_run_GA_cnt.py= -- run the genetic algorithm. It relaxes the trial
+   structures in VASP (coarse, then fine k-points), keeps the best ones,
+   breeds and mutates the next generation, and repeats until the energy stops
+   improving.
+
+4. Post-processing (not in this repo) -- the relaxed structures and raw DFT
+   energies are converted into formation energies and written to
+   =formation_en.txt= using the IMDgroup-pymatgen tooling, specifically the
+   =imdg visualize hull= command. Every subsequent script reads this file.
+
+5. =02_run_full_relax.py= -- take the structures within 10 meV/atom of the
+   convex hull (from =formation_en.txt=) and fully relax them in PBE,
+   including a length scan.
+
+6. =03_run_opt_initial_relax.py= -- re-relax the structures within 2 meV/atom
+   of the hull with the optB88-vdW functional.
+
+7. =03_run_opt_full_relax.py= -- final optB88-vdW relaxation, including
+   optimization of the tube length.
+
+8. =02_plot_gen_convergence.py= -- plot formation energy vs generation, per
+   concentration, to check that the GA has converged.
+
+* Physical notes
+
+Keep in mind that the CNT length may put constraints onto Na inside. Na tends
+to form a BCC-like lattice inside CNTs with relatively large radii, and that
+lattice may be constrained by the periodic boundary conditions along the tube
+axis. If the BCC lattice parameter does not align well with the nanotube
+supercell, we may induce artificial strains, affecting Na energetics. In
+theory (one needs to check), a poorly chosen CNT length may even affect the
+ground state structures found by the code.
+
+For this reason the relaxation scripts (=01_relax.py=, =02_run_full_relax.py=,
+=03_run_opt_full_relax.py=) run an equation-of-state scan over the z-length,
+so the final energies are corrected for this mismatch. Still, it is worth
+choosing the CNT length with the metal lattice parameter in mind before
+starting the search.
+
+* Dependencies
+
+- Python >= 3.13 (see =.python-version= and =pyproject.toml=)
+- VASP for DFT relaxation
+- AIRSS, specifically the =buildcell= binary, on your =PATH=
+- airsspy (https://github.com/zhubonan/airsspy)
+
+The Python dependencies are listed in =pyproject.toml=: =ase=, =pymatgen=,
+=IMDgroup-pymatgen=, and =IMDgroup-gorun=. The scripts import
+=IMDgroup.gorun= (the job-submission helper).
+
+* Usage
+
+A minimal end-to-end example:
+
+#+begin_src sh
+# 1. Build and relax an empty (15,0) CNT.
+python 01_relax.py 15 0 3 --vacuum 20 --functional pbe
+
+# 2. Generate 20 random trial structures with 4 Na atoms inside it.
+python 00_init_GA_cnt.py --cnt CNT_15,0_3_20 --number 4 --species Na --size_seeds 20
+
+# 3. Run the genetic algorithm using the relaxed CNT as the reference.
+python 01_run_GA_cnt.py GA_4_Na_CNT.db CNT_15,0_3_20
+#+end_src
+
+Step 3 is normally left running for several generations; it can be re-run to
+resume from where it stopped. The =--species= flag accepts =Na= or =Li=.
