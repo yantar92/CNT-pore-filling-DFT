@@ -52,6 +52,9 @@ def relax_all_unrelaxed(da, vaspinput, directory):
     """
     submitted_jobs = False
     has_unconverged = False
+    atom_numbers_to_optimize = da.get_atom_numbers_to_optimize()
+    # Infer the alkali element from the DB stoichiometry (11 -> Na, 3 -> Li)
+    element = chemical_symbols[atom_numbers_to_optimize[0]]
     for atoms in da.get_all_unrelaxed_candidates():
         atoms = atoms.copy()
         path = atoms.info['data'].get('path', None)
@@ -125,6 +128,10 @@ def relax_all_unrelaxed(da, vaspinput, directory):
                 directory=str(relax_dir),
                 # Fine-relax with accurate forces and IBRION=1
                 user_incar_settings={
+                    # 550eV for Li - need high for Li_sv pseudopotential (could be 500eV, but we went with 550)
+                    # 400eV for Na - rough, but ok.
+                    "ENCUT": 400 if element == 'Na' else 550,
+                    "ISPIN": 1 if element == 'Na' else 2,
                     # We do not care about stresses
                     "ALGO": "All",
                     "ISIF": 0,
@@ -284,6 +291,10 @@ def run_ga(db_file, reference_vasp, mutation_probability=0.3, max_generations=No
     vaspinput = IMDDerivedInputSet(
         directory=reference_vasp,
         user_incar_settings={
+            # need high for Li_sv pseudopotential - at least 500
+            # 400eV for Na - rough, but ok.
+            "ENCUT": 400 if element == 'Na' else 500,
+            "ISPIN": 1,
             "ALGO": 'All',
             "NELM": 400,
             # We do not care about stresses
